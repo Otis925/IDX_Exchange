@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /Users/otistsai/Desktop/IDX_Exchange status)",
+      "Bash(python3 *)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(curl -sS https://bootstrap.pypa.io/get-pip.py)",
+      "Bash(/Users/otistsai/Desktop/IDX_Exchange/.venv/bin/python3)",
+      "Read(//opt/homebrew/bin/**)",
+      "Read(//usr/local/bin/**)",
+      "Bash(python3.12 -m venv /Users/otistsai/Desktop/IDX_Exchange/.venv)",
+      "Bash(/Users/otistsai/Desktop/IDX_Exchange/.venv/bin/pip install *)",
+      "Bash(/Users/otistsai/Desktop/IDX_Exchange/.venv/bin/python *)",
+      "Bash(/Users/otistsai/Desktop/IDX_Exchange/.venv/bin/pip show *)",
+      "Bash(git -C /Users/otistsai/Desktop/IDX_Exchange add .gitignore data/ scripts/)"
+    ]
+  }
+}
