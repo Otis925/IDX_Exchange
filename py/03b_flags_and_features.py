@@ -22,6 +22,8 @@ that were not included in 03_clean_and_engineer.py:
     - segment_by_county.csv
     - segment_by_subtype.csv
     - segment_by_list_office.csv
+    - segment_by_mls_area.csv
+    - segment_by_buyer_office.csv
 
 Reads from:
   data/processed/sold_with_districts.csv
@@ -43,9 +45,11 @@ INPUT_LISTINGS = PROCESSED_DIR / "listings_with_districts.csv"
 OUTPUT_SOLD     = PROCESSED_DIR / "sold_with_districts.csv"
 OUTPUT_LISTINGS = PROCESSED_DIR / "listings_with_districts.csv"
 
-OUTPUT_SEG_COUNTY  = PROCESSED_DIR / "segment_by_county.csv"
-OUTPUT_SEG_SUBTYPE = PROCESSED_DIR / "segment_by_subtype.csv"
-OUTPUT_SEG_OFFICE  = PROCESSED_DIR / "segment_by_list_office.csv"
+OUTPUT_SEG_COUNTY      = PROCESSED_DIR / "segment_by_county.csv"
+OUTPUT_SEG_SUBTYPE     = PROCESSED_DIR / "segment_by_subtype.csv"
+OUTPUT_SEG_OFFICE      = PROCESSED_DIR / "segment_by_list_office.csv"
+OUTPUT_SEG_MLS_AREA    = PROCESSED_DIR / "segment_by_mls_area.csv"
+OUTPUT_SEG_BUYER_OFFICE= PROCESSED_DIR / "segment_by_buyer_office.csv"
 
 # ── Load ───────────────────────────────────────────────────────────────────────
 print("=" * 60)
@@ -58,7 +62,7 @@ print(f"Sold     loaded : {len(sold):,} rows, {sold.shape[1]} columns")
 print(f"Listings loaded : {len(listings):,} rows, {listings.shape[1]} columns")
 
 # ── Parse date columns ─────────────────────────────────────────────────────────
-DATE_COLS_SOLD = ["CloseDate", "ListingContractDate", "PurchaseContractDate"]
+DATE_COLS_SOLD = ["CloseDate", "ListingContractDate", "PurchaseContractDate", "ContractStatusChangeDate"]
 for col in DATE_COLS_SOLD:
     if col in sold.columns:
         sold[col] = pd.to_datetime(sold[col], errors="coerce")
@@ -287,6 +291,44 @@ if "ListOfficeName" in sold.columns:
 else:
     print("  WARNING: ListOfficeName column not found — skipping.")
 
+# ── Segment by MLSAreaMajor ───────────────────────────────────────────────────
+print("\n" + "=" * 60)
+print("WEEK 6 — Segment Summary: by MLSAreaMajor (top 50 by volume) ...")
+
+if "MLSAreaMajor" in sold.columns:
+    seg_mls = (
+        sold.groupby("MLSAreaMajor")
+        .agg(**AGG_SPEC)
+        .round(2)
+        .reset_index()
+        .sort_values("sales_count", ascending=False)
+        .head(50)
+    )
+    seg_mls.to_csv(OUTPUT_SEG_MLS_AREA, index=False)
+    print(f"  Top 50 MLS areas  →  {OUTPUT_SEG_MLS_AREA}")
+    print(seg_mls.head(10).to_string(index=False))
+else:
+    print("  WARNING: MLSAreaMajor column not found — skipping.")
+
+# ── Segment by BuyerOfficeName (top 50) ──────────────────────────────────────
+print("\n" + "=" * 60)
+print("WEEK 6 — Segment Summary: by BuyerOfficeName (top 50 by volume) ...")
+
+if "BuyerOfficeName" in sold.columns:
+    seg_buyer = (
+        sold.groupby("BuyerOfficeName")
+        .agg(**AGG_SPEC)
+        .round(2)
+        .reset_index()
+        .sort_values("sales_count", ascending=False)
+        .head(50)
+    )
+    seg_buyer.to_csv(OUTPUT_SEG_BUYER_OFFICE, index=False)
+    print(f"  Top 50 buyer offices  →  {OUTPUT_SEG_BUYER_OFFICE}")
+    print(seg_buyer.head(10).to_string(index=False))
+else:
+    print("  WARNING: BuyerOfficeName column not found — skipping.")
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SAVE UPDATED DATASETS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -329,6 +371,12 @@ for col in new_listings_cols:
     if col in listings.columns:
         print(f"  {col}")
 
+print("\nSegment summary files:")
+print("  segment_by_county.csv")
+print("  segment_by_subtype.csv")
+print("  segment_by_list_office.csv")
+print("  segment_by_mls_area.csv")
+print("  segment_by_buyer_office.csv")
 print("\nNEXT STEPS:")
 print("  Re-run 06_outlier_detection.py  (reads sold_with_districts.csv)")
 print("  Re-run 07_tableau_prep.py        (reads sold_iqr_clean.csv)")
